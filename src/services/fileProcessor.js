@@ -6,6 +6,7 @@ export async function processCSVFile(file){
 
     let formattedData = formattingData(fileContent);
     console.log(formattedData);
+    saveToLocalStorage(formattedData);
 }
 
 /**
@@ -24,7 +25,7 @@ function extractData(file){
         reader.onerror = function(){
             reject(new Error("Failed to read the file"));
         }
-        
+
         reader.readAsText(file);
     });
 }
@@ -40,4 +41,11 @@ function formattingData(data){
         csvParsed.push(row.split(";"));
     }
     return csvParsed;
+}
+
+/**
+ * @param {Array} data
+ */
+function saveToLocalStorage(data){
+    localStorage.setItem("content", JSON.stringify(data));
 }
