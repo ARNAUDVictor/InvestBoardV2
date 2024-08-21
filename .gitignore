@@ -25,3 +25,6 @@ dist-ssr
 
 
 .env
+.csv
+fichier_test.csv
+transactions_20240821_203351_66c6330f456e9.csv
