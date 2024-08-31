@@ -1,15 +1,45 @@
 <script>
-    import { getAllTransactions } from "../services/dataCollector";
+    import { transactions } from "../store/store";
 
-    let promise = getAllTransactions();
+    // Le store est automatiquement réactif grâce à $transactions
+    $:transactionFromStore = $transactions;
+
 </script>
 
-{#await promise}
-    <p>Chargement des données</p>
-{:then transactions}
-    {#each transactions as transaction}
-        <p>{transaction}</p>
-    {/each}
-{:catch error}
-    <p>{error.message}</p>
-{/await}
+{#if transactionFromStore.length > 0}
+    <table>
+        <thead>
+            <tr>
+                {#each Object.keys(transactionFromStore[0]) as key}
+                    <th>{key}</th>
+                {/each}
+            </tr>
+        </thead>
+        <tbody>
+            {#each transactionFromStore as row}
+                <tr>
+                    {#each Object.values(row) as value}
+                        <td>{value}</td>
+                    {/each}
+                </tr>
+            {/each}
+        </tbody>
+    </table>
+{:else}
+    <p>Pas de transactions enregistrées</p>
+{/if}
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: solid black 1px;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+</style>

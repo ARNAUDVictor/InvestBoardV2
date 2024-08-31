@@ -1,51 +1,21 @@
-/**
- * @param {File} file
- */
-export async function processCSVFile(file){
-    let fileContent = await extractData(file);
+import { transactions } from "../store/store";
+import Papa from "papaparse";
 
-    let formattedData = formattingData(fileContent);
-    console.log(formattedData);
-    saveToLocalStorage(formattedData);
-}
-
-/**
- * @param {File} file
- */
-function extractData(file){
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onload = function(event){
-            const csvContent = event.target.result
-
-            resolve(csvContent);
-        };
-
-        reader.onerror = function(){
-            reject(new Error("Failed to read the file"));
-        }
-
-        reader.readAsText(file);
+export function processCSVFile(file){
+    Papa.parse(file, {header: true, dynamicTyping: true, skipEmptyLines: true, chunkSize: 1024 *1024, chunk: (results) => {
+        transactions.update(existingData => [...existingData, ...results.data]);
+    },
+    complete: () => {
+        console.log("file parsing is complete");
+    },
+    error: (er) => {
+        console.error("File parsing error : ", er);
+    }
     });
 }
 
-/**
- * @param {string} data extracted from csv file
- */
-function formattingData(data){
-    let csvParsed = [];
-
-    let tempData = data.split("\r");
-    for(let row of tempData){
-        csvParsed.push(row.split(";"));
-    }
-    return csvParsed;
-}
-
-/**
- * @param {Array} data
- */
-function saveToLocalStorage(data){
-    localStorage.setItem("content", JSON.stringify(data));
+function addToStore(newData) {
+    transactions.update((existingData) => {
+        return [...existingData, ...newData];
+    });
 }
