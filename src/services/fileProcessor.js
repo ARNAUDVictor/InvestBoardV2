@@ -1,9 +1,10 @@
-import { transactions } from "../store/store";
+import { transactionsStore } from "../store/transactionsStore";
 import Papa from "papaparse";
 
 export function processCSVFile(file){
     Papa.parse(file, {header: true, dynamicTyping: true, skipEmptyLines: true, chunkSize: 1024 *1024, chunk: (results) => {
-        transactions.update(existingData => [...existingData, ...results.data]);
+        console.log(results.data);
+        transactionsStore.update((existingData) => [...existingData, ...results.data]);
     },
     complete: () => {
         console.log("file parsing is complete");
@@ -11,11 +12,5 @@ export function processCSVFile(file){
     error: (er) => {
         console.error("File parsing error : ", er);
     }
-    });
-}
-
-function addToStore(newData) {
-    transactions.update((existingData) => {
-        return [...existingData, ...newData];
     });
 }
