@@ -1,15 +1,19 @@
 <script>
-    import { processCSVFile } from "../services/fileProcessor";
+    import { processCSVFiles } from "../services/fileProcessor";
 
     let files;
 
     $: if(files){
-        //console.log(files[0]);
-        processCSVFile(files[0]);        
+        if(files.length != 2){
+            console.error("Il faut uploader 2 fichiers")
+        }
+        else{
+            processCSVFiles(files);
+        }       
     }
 </script>
 
 
 <label for="fileUpload">Upload a file:</label>
-<input accept=".csv" bind:files id="fileUpload" name="fileUpload" type="file" />
+<input accept=".csv" bind:files id="fileUpload" name="fileUpload" multiple type="file" />
 
