@@ -1,14 +1,10 @@
 <script>
     import { transactionsStore } from "../store/transactionsStore";
-    //import { statsStore } from "../store/statsStore";
 
     // Le store est automatiquement réactif grâce à $transactions
     $:transactionFromStore = $transactionsStore;
-    $:console.log("test : ", transactionFromStore);
 
 </script>
-<!--<p>Nombre total de projet : {$statsStore.totalProjectAmount}</p>
-<p>Argent total : {$statsStore.getTotalLoanedMoney} €</p>-->
 
 {#if Object.keys(transactionFromStore).length > 0}
     <table>
