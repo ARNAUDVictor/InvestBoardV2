@@ -38,32 +38,31 @@ function orderFileByType(files) {
 }
 
 function mergeData(contrats, transactions) {
-    const mergedData = [];
+    transactions.projects = contrats;
+    return transactions;
+}
 
-    //creer une map de toutes les lignes du fichier contrat avec pour identifiant le numéro de contrat + la date comme id unique
-    const mapContrats = new Map(contrats.map(contrat => [contrat["N°Contrat"] + contrat["Date de financement"], contrat]));
+function filterByOperationType(data) {
+    let filteredData = {};
 
-    //parcours du deuxieme fichier :
-    for (let transaction of transactions) {
-        const compositeKey = transaction["N°Contrat"] + transaction["Date"]; // création de l'identifiant unique pour les transaction
-        if (mapContrats.has(compositeKey)) {
-            const contrat = mapContrats.get(compositeKey);
-            mergedData.push({ ...contrat, ...transaction })
-        } else {
-            mergedData.push(transaction);
-        }
-    }
-    return mergedData;
+    filteredData.remboursements = data.filter(transaction => transaction["Opération"] == "Remboursement");
+    filteredData.depots = data.filter(transaction => transaction["Opération"] == "Dépôt de fonds");
+    filteredData.bonus = data.filter(transaction => transaction["Opération"] == "Bonus");
+
+    return filteredData;
 }
 
 export async function processCSVFiles(files) {
     let ordonedFiles = orderFileByType(files);
 
     try {
-        const dataFile1 = await parseCSVFile(files[0]);
-        const dataFile2 = await parseCSVFile(files[1]);
+        const contratsFile = await parseCSVFile(ordonedFiles.contrats);
+        const transactionsFile = await parseCSVFile(ordonedFiles.transaction);
 
-        transactionsStore.set(mergeData(dataFile1, dataFile2));
+        let filtredTransactions = filterByOperationType(transactionsFile);
+        let mergedData = mergeData(contratsFile, filtredTransactions);
+    
+        transactionsStore.set(mergedData);
     } catch (er) {
         console.error("Error processing files : ", er);
     }

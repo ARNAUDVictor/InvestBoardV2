@@ -1,3 +1,3 @@
 import { writable } from "svelte/store";
 
-export let transactionsStore = writable([]);
+export let transactionsStore = writable({});
