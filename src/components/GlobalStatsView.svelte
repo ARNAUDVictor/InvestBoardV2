@@ -7,6 +7,8 @@
 <p>Argent total : {$statsStore.totalLoanedMoney} €</p>
 <p>Argent actuellement investie : {$statsStore.totalCurrentlyLoanedMoney} €</p>
 <p>Total intérets reçus : {$statsStore.totalInterest} €</p>
+<p>Durée moyenne : {$statsStore.averageDuration} mois</p>
+<p>Taux moyen pondéré : {$statsStore.averageRate} %</p>
 
 
 <style>
