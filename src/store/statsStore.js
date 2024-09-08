@@ -78,21 +78,26 @@ function getAverageRate(transaction){
         let i = 0;
         for(let project of projects){
             i++;
-            console.log(project["Montant"], convertNumberStringToNumber(project["Taux"]));
             averageRate = averageRate + project["Montant"] * convertNumberStringToNumber(project["Taux"]);
-            console.log(averageRate);
         }
-        console.log(averageRate);
         averageRate = averageRate / getTotalCurrentlyLoanedMoney(transaction);
         return averageRate.toFixed(2);
     }
     return 0;
 }
 
-function getMaxExposition(transaction){
+function getMaxExposure(transaction){
     if (Object.keys(transaction).length > 0) {
         let projects =  transaction.projects.filter((project) => project["Statut"] == "Prêt en cours");
-        //let max = 
+        let maxElement = projects.reduce((max, current) => {
+            if(current["Montant"] > max["Montant"]){
+                return current;
+            }else{
+                return max;
+            }
+        },projects[0]);
+        let exposureMax = maxElement["Montant"] / getTotalCurrentlyLoanedMoney(transaction) * 100;
+        return exposureMax.toFixed(2);
     } 
 }
 
@@ -107,6 +112,7 @@ function createStatsStore() {
         const totalInterest = getTotalInterests($transactionsStore) || 0;
         const averageDuration = getAverageDuration($transactionsStore) || 0;
         const averageRate = getAverageRate($transactionsStore) || 0;
+        const maxExposure = getMaxExposure($transactionsStore) || 0;
 
         return {
             totalProjectAmount,
@@ -117,6 +123,7 @@ function createStatsStore() {
             totalInterest,
             averageDuration,
             averageRate,
+            maxExposure,
         };
     });
 
