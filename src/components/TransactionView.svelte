@@ -1,9 +1,15 @@
 <script>
     import { transactionsStore } from "../store/transactionsStore";
+    import RemboursementsView from "./RemboursementsView.svelte";
 
     // Le store est automatiquement réactif grâce à $transactions
-    $:transactionFromStore = $transactionsStore;
+    $: transactionFromStore = $transactionsStore;
 
+    let visibility = {};
+
+  function toggleVisibility(projectID) {
+    visibility[projectID] = !visibility[projectID];
+  }
 </script>
 
 {#if Object.keys(transactionFromStore).length > 0}
@@ -13,6 +19,7 @@
                 {#each Object.keys(transactionFromStore["projects"][0]) as key}
                     <th>{key}</th>
                 {/each}
+                <th>Remboursements</th>
             </tr>
         </thead>
         <tbody>
@@ -21,7 +28,14 @@
                     {#each Object.values(row) as value}
                         <td>{value}</td>
                     {/each}
+                    <td>
+                        <button on:click={() => toggleVisibility(row["N°Contrat"])}>Afficher remboursement</button>
+                        <!--https://stackoverflow.com/questions/69691703/how-can-i-show-a-hidden-text-by-clicking-on-a-button-->
+                    </td>
                 </tr>
+                {#if visibility[row["N°Contrat"]]}
+                    <RemboursementsView projectID={row["N°Contrat"]}/>
+                {/if}
             {/each}
         </tbody>
     </table>
@@ -34,7 +48,8 @@
         width: 100%;
         border-collapse: collapse;
     }
-    th, td {
+    th,
+    td {
         border: solid black 1px;
         padding: 8px;
         text-align: left;
