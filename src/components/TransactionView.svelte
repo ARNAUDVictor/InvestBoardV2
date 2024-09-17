@@ -1,6 +1,8 @@
 <script>
     import { transactionsStore } from "../store/transactionsStore";
     import RemboursementsView from "./RemboursementsView.svelte";
+    import { onMount } from 'svelte';
+    import {Chart} from "chart.js/auto";
 
     // Le store est automatiquement réactif grâce à $transactions
     $: transactionFromStore = $transactionsStore;
@@ -12,7 +14,11 @@
   function toggleVisibility(projectID) {
     visibility[projectID] = !visibility[projectID];
   }
+
 </script>
+
+
+
 
 {#if Object.keys(transactionFromStore).length > 0}
     <table>
