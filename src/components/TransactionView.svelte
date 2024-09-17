@@ -5,6 +5,8 @@
     // Le store est automatiquement réactif grâce à $transactions
     $: transactionFromStore = $transactionsStore;
 
+    let columnCount = 6;
+
     let visibility = {};
 
   function toggleVisibility(projectID) {
@@ -30,11 +32,14 @@
                     {/each}
                     <td>
                         <button on:click={() => toggleVisibility(row["N°Contrat"])}>Afficher remboursement</button>
-                        <!--https://stackoverflow.com/questions/69691703/how-can-i-show-a-hidden-text-by-clicking-on-a-button-->
                     </td>
                 </tr>
                 {#if visibility[row["N°Contrat"]]}
-                    <RemboursementsView projectID={row["N°Contrat"]}/>
+                    <tr>
+                        <td colspan={Object.keys(row).length + 1}>
+                            <RemboursementsView projectID={row["N°Contrat"]}/>
+                        </td>
+                    </tr>
                 {/if}
             {/each}
         </tbody>

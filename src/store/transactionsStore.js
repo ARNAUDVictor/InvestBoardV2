@@ -22,12 +22,19 @@ function createTransactionsStore() {
         return filtredTransactions;
     }
 
-return {
-    subscribe,
-    set,
-    update,
-    getRemboursementByDate,
-};
+    function getRemboursementByProject(projectId){
+        const transactions = get(transactionsStore);
+        return transactions["remboursements"].filter((remboursement) => remboursement["N°Contrat"] == projectId);
+    }
+
+    return {
+        subscribe,
+        set,
+        get,
+        update,
+        getRemboursementByDate,
+        getRemboursementByProject,
+    };
 }
 
 
