@@ -10,7 +10,7 @@
 
     let chartCanvas;
     let dates = remboursements.map((r) => r["Date"])
-    let montants = remboursements.map((r) => Number(replaceCommaByDot(r["Montant"])));
+    let montants = remboursements.map((r) => Number(replaceCommaByDot(r["Intérêts remboursés"])));
     dates = dates.reverse();
     montants = montants.reverse();
 
