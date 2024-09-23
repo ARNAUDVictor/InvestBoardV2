@@ -6,7 +6,7 @@ import { convertStringToDate } from "../services/utils";
 function createTransactionsStore() {
     const { subscribe, set, update } = writable({});
 
-    function getRemboursementByDate(beginDate, endDate) {
+    function getRemboursementByMonth(beginDate, endDate) {
         beginDate = convertStringToDate(beginDate).getTime();
         endDate = convertStringToDate(endDate).getTime();
 
@@ -16,6 +16,23 @@ function createTransactionsStore() {
         if (transactions && transactions["remboursements"]) {
             filtredTransactions = transactions["remboursements"].filter((remboursement) => {
                 const dateTime = convertStringToDate(remboursement["Date"]).getTime();
+                return dateTime >= beginDate && dateTime <= endDate;
+            });
+        }
+        return filtredTransactions;
+    }
+
+    function getProjectByMonth(beginDate, endDate){
+        beginDate = convertStringToDate(beginDate).getTime();
+        endDate = convertStringToDate(endDate).getTime();
+
+        let filtredTransactions = {};
+        const transactions = get(transactionsStore);
+        //console.log("projet : ", transactionsStore.projects);
+
+        if (transactions && transactions["projects"]) {
+            filtredTransactions = transactions["projects"].filter((projet) => {
+                const dateTime = convertStringToDate(projet["Date"]).getTime();
                 return dateTime >= beginDate && dateTime <= endDate;
             });
         }
@@ -32,8 +49,9 @@ function createTransactionsStore() {
         set,
         get,
         update,
-        getRemboursementByDate,
+        getRemboursementByDate: getRemboursementByMonth,
         getRemboursementByProject,
+        getProjectByMonth,
     };
 }
 

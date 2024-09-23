@@ -26,10 +26,9 @@
         <p class="value">{$statsStore.totalInterest} €</p>
     </div>
 </div>
+<!--
 <div>
-    <div class="">
-        <p>Nombre total de projet : {$statsStore.totalProjectAmount}</p>
-    </div>
+    <p>Nombre total de projet : {$statsStore.totalProjectAmount}</p>
     <p>
         Nombre de projet terminés : {$statsStore.numberCompletedProjects} soit {$statsStore.percentageOfCompletedProjects}
         %
@@ -40,20 +39,21 @@
     
     <p>Taux exposition MAX : {$statsStore.maxExposure} %</p>
 </div>
+-->
 
 <style>
     #cardContainer{
         display: flex;
         justify-content: space-around;
+        margin: 15px;
     }
 
     .card {
         width: 200px;
-        background-color: #423b6f;
+        background-color: #009FB7;
         border-radius: 15px;
         padding: 20px;
         text-align: center;
-        color: #fff;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         max-width: 200px;
     }
@@ -61,7 +61,6 @@
     .card .title {
         font-size: 24px;
         margin-bottom: 10px;
-        color: #c1b9e8;
     }
 
     .card .value {

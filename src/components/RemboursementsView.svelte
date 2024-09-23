@@ -6,7 +6,6 @@
 
     export let projectID;
     const remboursements = transactionsStore.getRemboursementByProject(projectID);
-    console.log("remb : ", remboursements);
 
     let chartCanvas;
     let dates = remboursements.map((r) => r["Date"])
@@ -33,10 +32,11 @@
     });
 </script>
 
-
-<div class="graph">
-    <canvas bind:this={chartCanvas}></canvas>
-</div>
+{#if dates.length > 0}
+    <div class="graph">
+        <canvas bind:this={chartCanvas}></canvas>
+    </div>
+{/if}
 
 {#if Object.keys(remboursements).length > 0}
     <table>

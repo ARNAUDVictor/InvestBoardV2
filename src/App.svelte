@@ -1,19 +1,23 @@
 <script>
-    import FileInput from "./components/FileInput.svelte";
     import GlobalStatsView from "./components/GlobalStatsView.svelte";
+    import InvestedMoneyGraph from "./components/InvestedMoneyGraph.svelte";
     import MenuView from "./components/MenuView.svelte";
     import TransactionView from "./components/TransactionView.svelte";
-
-
 </script>
 
 <main>
     <MenuView/>
-    <FileInput/>
     <GlobalStatsView/>
+    <InvestedMoneyGraph/>
     <TransactionView/>
 </main>
 
 <style>
+    main{
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
 
+    
 </style>
