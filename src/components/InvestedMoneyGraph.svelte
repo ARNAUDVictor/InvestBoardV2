@@ -2,67 +2,53 @@
     import { onMount } from "svelte";
     import { transactionsStore } from "../store/transactionsStore";
     import Chart from "chart.js/auto";
-    import { RemoteChunkSize } from "papaparse";
-
-    let remboursements = {};
-    $: remboursements= transactionsStore.getProjectByMonth("01/01/2022", "01/03/2022");
+    import { replaceCommaByDot } from "../services/utils";
 
     let chart;
-    let montants = [];
     let chartCanvas;
-    let dates = [];
+    let dates = "01/05/2023";
+    let investedMoney = [];
 
-    console.log("test : ", remboursements);
-    if (Object.values(remboursements).length > 0) {
-        console.log("remb : ", remboursements);
-
-
-        dates = remboursements.map((r) => r["Date"]);
-        //let montants = remboursements.map((r) => Number(replaceCommaByDot(r["Intérêts remboursés"])));
-        dates = dates.reverse();
-        //montants = montants.reverse();
-    }else{
-        dates = [0]
-    }
-
-
-
+    // Fonction pour mettre à jour les données du graphique
     function updateChart() {
         if (chart) {
-            chart.data.labels = dates;
-            chart.data.datasets[0].data = [0];
+            console.log("test : ", investedMoney);
+            chart.data.labels = Object.keys(investedMoney);
+            chart.data.datasets[0].data = Object.values(investedMoney);
             chart.update();
         }
     }
 
     // S'abonner aux modifications du store et mettre à jour le graphique
     transactionsStore.subscribe((transactions) => {
-        if (transactions) {
-            let remboursements = transactionsStore.getProjectByMonth("01/01/2022", "01/03/2022");
+        let remboursements = transactionsStore.getProjectByMonth(dates);
 
-            if (Object.values(remboursements).length > 0) {
-                dates = [1]; //remboursements.map((r) => r["Date"]).reverse();
-                montants = [3]; //remboursements.map((r) => Number(replaceCommaByDot(r["Intérêts remboursés"]))).reverse();
-            } else {
-                dates = [0];
-                montants = [0];
+        if (Object.values(remboursements).length > 0) {
+            let montant = 0;
+            investedMoney = [];
+            for (let r of Object.values(remboursements)) {
+                montant += r["Montant"];
             }
-
-            // Met à jour le graphique avec les nouvelles données
-            updateChart();
+            investedMoney[dates] = montant;
         }
+        // Met à jour le graphique avec les nouvelles données
+        updateChart();
     });
 
-
     onMount(() => {
-        new Chart(chartCanvas, {
+        if (investedMoney[0] == null) {
+            let today = new Date().toLocaleDateString();
+            investedMoney[today] = 0;
+        }
+        console.log(investedMoney);
+        chart = new Chart(chartCanvas, {
             type: "bar", // Type de graphique (line, bar, pie, etc.)
             data: {
-                labels: dates,
+                labels: Object.keys(investedMoney),
                 datasets: [
                     {
                         label: "Remboursement",
-                        data: [0], //montants,
+                        data: Object.values(investedMoney),
                         borderColor: "rgba(75, 192, 192, 1)",
                         backgroundColor: "rgba(117, 255, 51, 0.2)",
                     },
@@ -75,11 +61,13 @@
     });
 </script>
 
-{#if dates.length > 0}
-    <div class="graph">
-        <canvas bind:this={chartCanvas}></canvas>
-    </div>
+{#if investedMoney.length == 0}
+    <h2>Aucune donnée disponible pour la plage de dates sélectionnée.</h2>
 {/if}
+
+<div class="graph">
+    <canvas bind:this={chartCanvas}></canvas>
+</div>
 
 <style>
     .graph {
