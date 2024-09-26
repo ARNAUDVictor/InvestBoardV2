@@ -58,12 +58,19 @@ export async function processCSVFiles(files) {
     try {
         const contratsFile = await parseCSVFile(ordonedFiles.contrats);
         const transactionsFile = await parseCSVFile(ordonedFiles.transaction);
-
-        let filtredTransactions = filterByOperationType(transactionsFile);
-        let mergedData = mergeData(contratsFile, filtredTransactions);
-    
-        transactionsStore.set(mergedData);
+        try{
+            let filtredTransactions = filterByOperationType(transactionsFile);
+            let mergedData = mergeData(contratsFile, filtredTransactions);
+            try{
+                transactionsStore.set(mergedData);
+            } catch (er) {
+                console.error("Error merging files : ", er);
+            }
+        } catch (er) {
+            console.error("Error processing files : ", er);
+        }
     } catch (er) {
-        console.error("Error processing files : ", er);
+        console.error("Error parsing files : ", er);
     }
+    
 }

@@ -12,15 +12,16 @@
     // Fonction pour mettre à jour les données du graphique
     function updateChart() {
         if (chart) {
-            console.log("test : ", investedMoney);
             chart.data.labels = Object.keys(investedMoney);
             chart.data.datasets[0].data = Object.values(investedMoney);
             chart.update();
+            //transactionsStore.getInvestedMoneyByMonth();
+            transactionsStore.getInvestedMoneyByMonthFromBeginning();
         }
     }
 
     // S'abonner aux modifications du store et mettre à jour le graphique
-    transactionsStore.subscribe((transactions) => {
+    transactionsStore.subscribe(() => {
         let remboursements = transactionsStore.getProjectByMonth(dates);
 
         if (Object.values(remboursements).length > 0) {
@@ -40,7 +41,6 @@
             let today = new Date().toLocaleDateString();
             investedMoney[today] = 0;
         }
-        console.log(investedMoney);
         chart = new Chart(chartCanvas, {
             type: "bar", // Type de graphique (line, bar, pie, etc.)
             data: {
@@ -60,10 +60,6 @@
         });
     });
 </script>
-
-{#if investedMoney.length == 0}
-    <h2>Aucune donnée disponible pour la plage de dates sélectionnée.</h2>
-{/if}
 
 <div class="graph">
     <canvas bind:this={chartCanvas}></canvas>
