@@ -7,31 +7,24 @@
     let chart;
     let chartCanvas;
     let dates = "01/05/2023";
-    let investedMoney = [];
+    let investedMoney = {};
 
     // Fonction pour mettre à jour les données du graphique
     function updateChart() {
         if (chart) {
+            investedMoney = transactionsStore.getInvestedMoneyByMonthFromBeginning();
+            console.log("invest : ", investedMoney);
             chart.data.labels = Object.keys(investedMoney);
             chart.data.datasets[0].data = Object.values(investedMoney);
             chart.update();
             //transactionsStore.getInvestedMoneyByMonth();
-            transactionsStore.getInvestedMoneyByMonthFromBeginning();
+            
         }
     }
 
     // S'abonner aux modifications du store et mettre à jour le graphique
     transactionsStore.subscribe(() => {
-        let remboursements = transactionsStore.getProjectByMonth(dates);
 
-        if (Object.values(remboursements).length > 0) {
-            let montant = 0;
-            investedMoney = [];
-            for (let r of Object.values(remboursements)) {
-                montant += r["Montant"];
-            }
-            investedMoney[dates] = montant;
-        }
         // Met à jour le graphique avec les nouvelles données
         updateChart();
     });
@@ -50,7 +43,7 @@
                         label: "Remboursement",
                         data: Object.values(investedMoney),
                         borderColor: "rgba(75, 192, 192, 1)",
-                        backgroundColor: "rgba(117, 255, 51, 0.2)",
+                        backgroundColor: "rgba(117, 255, 51, 0.7)",
                     },
                 ],
             },

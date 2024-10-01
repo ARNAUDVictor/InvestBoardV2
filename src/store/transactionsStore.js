@@ -10,6 +10,16 @@ function createTransactionsStore() {
     const { subscribe, set, update } = writable({});
 
     /**
+     * Get one project with all it data by project ID
+     * @param {string} projectId 
+     * @returns {Object} project with all data
+     */
+    function getRemboursementByProject(projectId){
+        const transactions = get(transactionsStore);
+        return transactions["remboursements"].filter((remboursement) => remboursement["N°Contrat"] == projectId);
+    }
+
+    /**
      * Get all remboursements between "beginDate" and "endDate"
      * @param {string} beginDateStr - beginning date of asked data. Format : "DD-MM-YYYY"
      * @param {string} endDateStr - ending date of asked data. Format : "DD-MM-YYYY"
@@ -32,7 +42,7 @@ function createTransactionsStore() {
     }
 
     /**
-     * Get all projects between month and yeard of "date"
+     * Get all projects of month and yeard of "date"
      * @param {string} datestr - month and year of asked data. Format : "DD-MM-YYYY"
      * @returns {Array} - array contain all project of the entered month's date
      */
@@ -52,7 +62,6 @@ function createTransactionsStore() {
                 return dateMonth == month && dateYear == year;
             });
         }
-        print
         return filtredTransactions;
     }
 
@@ -74,35 +83,34 @@ function createTransactionsStore() {
     /**
      * Get money invested by month from the begining of investements
      */
-    function getInvestedMoneyByMonthFromBeginning(){ // a cahnger en bt period avec date de debut et de fin optionnel 
-        let investedMoney = [];
-        const today = new Date();
+    function getInvestedMoneyByMonthFromBeginning(){
+        let investedMoney = {};
         const transactions = get(transactionsStore);
         
         if(transactions["projects"]){
-            let dates = transactions["projects"].map(transaction => new Date(convertStringToDate(transaction["Date de financement"])));
-            const startDate = new Date(Math.min(...dates));
-            let currentDate = startDate
-            const todayDate = new Date();
-            todayDate.setDate(1);
+            let currentDate = getBeginningDate();
+            const todayDate = new Date(); // recupère la date d'aujourd'hui
+            todayDate.setDate(1); //  et set le jour à 1
             while (currentDate <= todayDate) {
-                console.log(getInvestedMoneyByMonth(currentDate.toLocaleDateString()));
-
-                investedMoney.push(getInvestedMoneyByMonth(currentDate.toLocaleDateString()));
-        
-                console.log(investedMoney);
-        
+                let monthdata = getInvestedMoneyByMonth(currentDate.toLocaleDateString());
+                investedMoney[Object.keys(monthdata)] = Object.values(monthdata)[0];
                 currentDate.setMonth(currentDate.getMonth() + 1); // Passe au mois suivant
             }
+            return investedMoney;
         }
     }
 
-    // nouvelle function pour recupérer le montant total de tous les projets actif d'un mois donné
-
-    function getRemboursementByProject(projectId){
+    /**
+     *  Get the date of the first investement
+     * @returns {Date} - Date of the first investissement
+     */
+    function getBeginningDate(){
         const transactions = get(transactionsStore);
-        return transactions["remboursements"].filter((remboursement) => remboursement["N°Contrat"] == projectId);
+        let dates = transactions["projects"].map(transaction => new Date(convertStringToDate(transaction["Date de financement"])));
+        return new Date(Math.min(...dates));
     }
+
+
 
     return {
         subscribe,

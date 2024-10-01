@@ -22,7 +22,7 @@
                     label: 'Remboursement',
                     data: montants,
                     borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(117, 255, 51, 0.2)',
+                    backgroundColor: 'rgba(117, 255, 51, 0.7)',
                 }]
             },
             options:{
