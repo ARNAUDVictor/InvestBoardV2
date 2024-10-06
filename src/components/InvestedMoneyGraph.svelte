@@ -2,29 +2,25 @@
     import { onMount } from "svelte";
     import { transactionsStore } from "../store/transactionsStore";
     import Chart from "chart.js/auto";
-    import { replaceCommaByDot } from "../services/utils";
 
     let chart;
     let chartCanvas;
-    let dates = "01/05/2023";
     let investedMoney = {};
 
     // Fonction pour mettre à jour les données du graphique
     function updateChart() {
         if (chart) {
-            investedMoney = transactionsStore.getInvestedMoneyByMonthFromBeginning();
-            console.log("invest : ", investedMoney);
+            investedMoney = [1,2,3,4,5,6,7,8,9];
             chart.data.labels = Object.keys(investedMoney);
             chart.data.datasets[0].data = Object.values(investedMoney);
             chart.update();
-            //transactionsStore.getInvestedMoneyByMonth();
+            transactionsStore.getDepositsBetweenDates();
             
         }
     }
 
     // S'abonner aux modifications du store et mettre à jour le graphique
     transactionsStore.subscribe(() => {
-
         // Met à jour le graphique avec les nouvelles données
         updateChart();
     });

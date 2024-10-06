@@ -60,9 +60,13 @@ export async function processCSVFiles(files) {
         const transactionsFile = await parseCSVFile(ordonedFiles.transaction);
         try{
             let filtredTransactions = filterByOperationType(transactionsFile);
-            let mergedData = mergeData(contratsFile, filtredTransactions);
             try{
-                transactionsStore.set(mergedData);
+                let mergedData = mergeData(contratsFile, filtredTransactions);
+                try{
+                    transactionsStore.set(mergedData);
+                } catch (er){
+                    console.error("Error : set data in store", er);
+                }
             } catch (er) {
                 console.error("Error merging files : ", er);
             }

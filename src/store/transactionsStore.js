@@ -100,6 +100,10 @@ function createTransactionsStore() {
         }
     }
 
+
+
+
+    
     /**
      *  Get the date of the first investement
      * @returns {Date} - Date of the first investissement
@@ -108,6 +112,72 @@ function createTransactionsStore() {
         const transactions = get(transactionsStore);
         let dates = transactions["projects"].map(transaction => new Date(convertStringToDate(transaction["Date de financement"])));
         return new Date(Math.min(...dates));
+    }
+
+    function getDepositsBetweenDates(){
+        let investedMoney = {};
+        const transactions = get(transactionsStore);
+        
+        if(transactions["depots"]){
+            let currentDate = getBeginningDate();
+            const todayDate = new Date(); // recupère la date d'aujourd'hui
+            todayDate.setDate(1); //  et set le jour à 1
+            while (currentDate <= todayDate) {
+                const month = getDepotByMonth(currentDate.toLocaleDateString());
+                investedMoney[Object.keys(month["Date"])] = Object.values(month["Montant"]);
+                console.log(investedMoney);
+                currentDate.setMonth(currentDate.getMonth() + 1); // Passe au mois suivant
+            }
+            return investedMoney;
+        }
+    }
+    
+
+    /**
+     * Get all depot of a given month
+     * @param {string} datestr - string of the given month and year for filter
+     * @returns {Array} array with all depot corresponding to given date
+     */
+    function getDepotByMonth(datestr){
+        const date = convertStringToDate(datestr);
+        const month = date.getMonth();
+        const year = date.getFullYear();
+        const transactions = get(transactionsStore);
+        return filterByMonthAndYear(transactions["depots"], month, year);
+    }
+
+    /** 
+     * Get all transaction corresponding to the date given in the given array
+     * @param {Array}  transactions - Array of all transactions to filter
+     * @param {number} month - month for filter
+     * @param {number} year - year for filter
+     * @returns {Array} Filtred transations corresponding to month and year
+     */
+    function filterByMonthAndYear(transactions, month, year){
+        if (!transactions || transactions.length == 0){
+            console.error("Error : La liste de transaction est vide ou n'existe pas");
+            return;
+        }
+
+        let dateKey = "";
+        let filtredTransaction = [];
+
+        switch(transactions[0]["Opération"]){
+            case "Dépôt de fonds":
+                 dateKey = "Date";
+                 break;
+            default:
+                console.log("Opération inconnu : ", transactions[0]["Opération"]);
+        }
+
+        filtredTransaction = transactions.filter((depot) => {
+            const depotDate = convertStringToDate(depot[dateKey]);
+            const dateMonth = depotDate.getMonth();
+            const dateYear = depotDate.getFullYear();
+            return dateMonth == month && dateYear == year;
+        });
+        console.log(filtredTransaction);
+        return filtredTransaction;
     }
 
 
@@ -122,6 +192,8 @@ function createTransactionsStore() {
         getProjectByMonth,
         getInvestedMoneyByMonth,
         getInvestedMoneyByMonthFromBeginning,
+        getDepotByMonth,
+        getDepositsBetweenDates,
     };
 }
 
