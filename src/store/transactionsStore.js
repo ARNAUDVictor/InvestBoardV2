@@ -110,8 +110,28 @@ function createTransactionsStore() {
         return new Date(Math.min(...dates));
     }
 
+    /**
+     * get deposits cumul by month
+     * @returns {Object} - key = date, value = sum of all precedent deposits
+     */
+    function getAccountValueByMonth(){
+        const deposits = getDepositsBetweenDates();
+        let cumulativeSum = 0;
+        let cumulativeDeposits = {};
+
+        for(const [date, amount] of Object.entries(deposits)){
+            cumulativeSum += amount;
+            cumulativeDeposits[date] = cumulativeSum;
+        }
+        console.log(cumulativeDeposits);
+        return cumulativeDeposits;
+    }
+
+    /**
+     * get all deposit ordonned by month
+     * @returns {Object} key = date, value = sum of all deposit of the month
+     */
     function getDepositsBetweenDates(){
-        let investedMoney = {};
         const transactions = get(transactionsStore);
         
         if(transactions["depots"]){
@@ -124,8 +144,7 @@ function createTransactionsStore() {
                 deposits[currentDateStr] = getDepositsSum(getDepotByMonth(currentDateStr));
                 currentDate.setMonth(currentDate.getMonth() + 1); // Passe au mois suivant
             }
-            console.log("deposit : ", deposits);
-            return investedMoney;
+            return deposits;
         }
     }
 
@@ -202,7 +221,7 @@ function createTransactionsStore() {
         getInvestedMoneyByMonth,
         getInvestedMoneyByMonthFromBeginning,
         getDepotByMonth,
-        getDepositsBetweenDates,
+        getAccountValueByMonth,
     };
 }
 

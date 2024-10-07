@@ -10,12 +10,10 @@
     // Fonction pour mettre à jour les données du graphique
     function updateChart() {
         if (chart) {
-            investedMoney = [1,2,3,4,5,6,7,8,9];
+            investedMoney = transactionsStore.getAccountValueByMonth();
             chart.data.labels = Object.keys(investedMoney);
             chart.data.datasets[0].data = Object.values(investedMoney);
             chart.update();
-            transactionsStore.getDepositsBetweenDates();
-            
         }
     }
 
