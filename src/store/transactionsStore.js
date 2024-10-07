@@ -1,5 +1,5 @@
 import { get, writable } from "svelte/store";
-import { convertStringToDate } from "../services/utils";
+import { convertStringToDate, replaceCommaByDot } from "../services/utils";
 
 
 /**
@@ -99,10 +99,6 @@ function createTransactionsStore() {
             return investedMoney;
         }
     }
-
-
-
-
     
     /**
      *  Get the date of the first investement
@@ -119,17 +115,31 @@ function createTransactionsStore() {
         const transactions = get(transactionsStore);
         
         if(transactions["depots"]){
-            let currentDate = getBeginningDate();
+            let currentDate = getBeginningDate(); 
             const todayDate = new Date(); // recupère la date d'aujourd'hui
             todayDate.setDate(1); //  et set le jour à 1
+            let deposits = {};
             while (currentDate <= todayDate) {
-                const month = getDepotByMonth(currentDate.toLocaleDateString());
-                investedMoney[Object.keys(month["Date"])] = Object.values(month["Montant"]);
-                console.log(investedMoney);
+                const currentDateStr = currentDate.toLocaleDateString();
+                deposits[currentDateStr] = getDepositsSum(getDepotByMonth(currentDateStr));
                 currentDate.setMonth(currentDate.getMonth() + 1); // Passe au mois suivant
             }
+            console.log("deposit : ", deposits);
             return investedMoney;
         }
+    }
+
+    /**
+     * Get the sum of all given deposit
+     * @param {Array} deposits 
+     * @returns {Number} - sum of all deposits
+     */
+    function getDepositsSum(deposits){
+        const totalDepot = deposits.reduce((total, deposit) => {
+            console.log(replaceCommaByDot(deposit.Montant));
+            return total + parseFloat(replaceCommaByDot(deposit.Montant));
+        }, 0); // 0 est la valeur initiale
+        return totalDepot;
     }
     
 
@@ -176,7 +186,6 @@ function createTransactionsStore() {
             const dateYear = depotDate.getFullYear();
             return dateMonth == month && dateYear == year;
         });
-        console.log(filtredTransaction);
         return filtredTransaction;
     }
 
