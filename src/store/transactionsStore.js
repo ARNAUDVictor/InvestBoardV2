@@ -14,7 +14,7 @@ function createTransactionsStore() {
      * @param {string} projectId 
      * @returns {Object} project with all data
      */
-    function getRemboursementByProject(projectId){
+    function getRemboursementByProject(projectId) {
         const transactions = get(transactionsStore);
         return transactions["remboursements"].filter((remboursement) => remboursement["N°Contrat"] == projectId);
     }
@@ -46,7 +46,7 @@ function createTransactionsStore() {
      * @param {string} datestr - month and year of asked data. Format : "DD-MM-YYYY"
      * @returns {Array} - array contain all project of the entered month's date
      */
-    function getProjectByMonth(datestr){
+    function getProjectByMonth(datestr) {
         const date = convertStringToDate(datestr);
         const month = date.getMonth();
         const year = date.getFullYear();
@@ -70,7 +70,7 @@ function createTransactionsStore() {
      * @param {string} date - month and year of asked data. Format : "DD-MM-YY"
      * @returns {Object<String, Number>} key = date, value = money off asked month and year
      */
-    function getInvestedMoneyByMonth(date){
+    function getInvestedMoneyByMonth(date) {
         let investedMoney = {};
         let projects = getProjectByMonth(date);
         const totalMoney = projects.reduce((total, project) => {
@@ -83,11 +83,11 @@ function createTransactionsStore() {
     /**
      * Get money invested by month from the begining of investements
      */
-    function getInvestedMoneyByMonthFromBeginning(){
+    function getInvestedMoneyByMonthFromBeginning() {
         let investedMoney = {};
         const transactions = get(transactionsStore);
-        
-        if(transactions["projects"]){
+
+        if (transactions["projects"]) {
             let currentDate = getBeginningDate();
             const todayDate = new Date(); // recupère la date d'aujourd'hui
             todayDate.setDate(1); //  et set le jour à 1
@@ -99,80 +99,118 @@ function createTransactionsStore() {
             return investedMoney;
         }
     }
-    
+
+
+    /************************************************************************* */
     /**
      *  Get the date of the first investement
      * @returns {Date} - Date of the first investissement
      */
-    function getBeginningDate(){
+    function getBeginningDate() {
         const transactions = get(transactionsStore);
         let dates = transactions["projects"].map(transaction => new Date(convertStringToDate(transaction["Date de financement"])));
         return new Date(Math.min(...dates));
     }
 
     /**
-     * get deposits cumul by month
-     * @returns {Object} - key = date, value = sum of all precedent deposits
+     * Get cumulative deposits by month.
+     * @returns {Object} - key = date, value = cumulative sum of deposits for each month.
      */
-    function getAccountValueByMonth(){
-        const deposits = getDepositsBetweenDates();
-        let cumulativeSum = 0;
-        let cumulativeDeposits = {};
-
-        for(const [date, amount] of Object.entries(deposits)){
-            cumulativeSum += amount;
-            cumulativeDeposits[date] = cumulativeSum;
-        }
-        console.log(cumulativeDeposits);
-        return cumulativeDeposits;
+    function getDepositValueByMonth() {
+        return getCumulativeValuesByMonth(() =>
+            getValuesBetweenDates("depots", (dateStr) => {
+                const depots = getValuesByMonth(dateStr, "depots", "Montant");
+                return getSum(depots,"Montant");
+            })
+        );
     }
 
     /**
-     * get all deposit ordonned by month
-     * @returns {Object} key = date, value = sum of all deposit of the month
+     * Get cumulative interests by month.
+     * @returns {Object} - key = date, value = cumulative sum of interests for each month.
      */
-    function getDepositsBetweenDates(){
+    function getInterestsValueByMonth() {
+        return getCumulativeValuesByMonth(() =>
+            getValuesBetweenDates("remboursements", (dateStr) =>{
+                const interests = getValuesByMonth(dateStr, "remboursements", "Intérêts remboursés");
+                return getSum(interests, "Intérêts remboursés");
+            })
+        );
+    }
+
+    /**
+     * Generic function to calculate cumulative sums by month.
+     * @param {Function} getValuesFunction - Function that returns the values for each month.
+     * @returns {Object} - An object where keys are dates and values are cumulative sums.
+     */
+    function getCumulativeValuesByMonth(getValuesFunction) {
+        let cumulativeSum = 0; 
+        let cumulativeValues = {};
+
+        // Call the passed function to get the values by month (deposits or interests)
+        const valuesByMonth = getValuesFunction();
+
+        // Iterate over each month (date) and its corresponding value (sum by month)
+        for (const [date, amount] of Object.entries(valuesByMonth)) {
+            cumulativeSum += amount;
+            cumulativeValues[date] = cumulativeSum; // Store the cumulative sum for the current month
+        }
+        return cumulativeValues; 
+    }
+
+    /**
+     * Get values (deposits or interests) between the beginning date and today.
+     * @param {string} transactionType - Type of transaction to retrieve ('depots', 'remboursements').
+     * @param {Function} sumByMonthFunction - Function to calculate the sum for each month.
+     * @returns {Object} - An object where keys are dates (month) and values are sums for each month.
+     */
+    function getValuesBetweenDates(transactionType, sumByMonthFunction) {
         const transactions = get(transactionsStore);
-        
-        if(transactions["depots"]){
-            let currentDate = getBeginningDate(); 
-            const todayDate = new Date(); // recupère la date d'aujourd'hui
-            todayDate.setDate(1); //  et set le jour à 1
-            let deposits = {};
+        if (transactions[transactionType]) {
+            let currentDate = getBeginningDate(); // starting date
+            const todayDate = new Date(); // today / ending date
+            todayDate.setDate(1); // day = 1
+            let valuesByMonth = {};
+
             while (currentDate <= todayDate) {
                 const currentDateStr = currentDate.toLocaleDateString();
-                deposits[currentDateStr] = getDepositsSum(getDepotByMonth(currentDateStr));
-                currentDate.setMonth(currentDate.getMonth() + 1); // Passe au mois suivant
+                valuesByMonth[currentDateStr] = sumByMonthFunction(currentDateStr); // sum of the month
+                currentDate.setMonth(currentDate.getMonth() + 1); // next month
             }
-            return deposits;
+
+            return valuesByMonth;
         }
     }
 
     /**
-     * Get the sum of all given deposit
-     * @param {Array} deposits 
-     * @returns {Number} - sum of all deposits
+     * Calculate the sum of the values for a given month.
+     * @param {Array} values - Array of values (deposits or interests) to sum.
+     * @param {string} valueKey - The key to access the value ('Montant', 'Intérêts remboursés').
+     * @returns {Number} - Sum of the values for the given month.
      */
-    function getDepositsSum(deposits){
-        const totalDepot = deposits.reduce((total, deposit) => {
-            console.log(replaceCommaByDot(deposit.Montant));
-            return total + parseFloat(replaceCommaByDot(deposit.Montant));
-        }, 0); // 0 est la valeur initiale
-        return totalDepot;
+    function getSum(values, valueKey) {
+        const total = values.reduce((sum, item) => {
+            return sum + parseFloat(replaceCommaByDot(item[valueKey])); // Convert string values to float and add them up
+        }, 0); // Initial sum = 0
+
+        return total;
     }
-    
 
     /**
-     * Get all depot of a given month
-     * @param {string} datestr - string of the given month and year for filter
-     * @returns {Array} array with all depot corresponding to given date
+     * Get all values (deposits or interests) for a given month.
+     * @param {string} dateStr - The date string representing the month and year.
+     * @param {string} transactionType - The type of transaction to retrieve ('depots', 'remboursements').
+     * @param {string} valueKey - The key to access the value in each transaction ('Montant', 'Intérêts remboursés').
+     * @returns {Array} - Array of transactions corresponding to the given month.
      */
-    function getDepotByMonth(datestr){
-        const date = convertStringToDate(datestr);
+    function getValuesByMonth(dateStr, transactionType, valueKey) {
+        const date = convertStringToDate(dateStr);
         const month = date.getMonth();
         const year = date.getFullYear();
-        const transactions = get(transactionsStore);
-        return filterByMonthAndYear(transactions["depots"], month, year);
+        const transactions = get(transactionsStore); // get all transactions from the store
+
+        // Filter the transactions by the given month and year
+        return filterByMonthAndYear(transactions[transactionType], month, year);
     }
 
     /** 
@@ -182,8 +220,8 @@ function createTransactionsStore() {
      * @param {number} year - year for filter
      * @returns {Array} Filtred transations corresponding to month and year
      */
-    function filterByMonthAndYear(transactions, month, year){
-        if (!transactions || transactions.length == 0){
+    function filterByMonthAndYear(transactions, month, year) {
+        if (!transactions || transactions.length == 0) {
             console.error("Error : La liste de transaction est vide ou n'existe pas");
             return;
         }
@@ -191,10 +229,11 @@ function createTransactionsStore() {
         let dateKey = "";
         let filtredTransaction = [];
 
-        switch(transactions[0]["Opération"]){
-            case "Dépôt de fonds":
-                 dateKey = "Date";
-                 break;
+        switch (transactions[0]["Opération"]) {
+            case "Dépôt de fonds": // fall through next case will be execute
+            case "Remboursement":
+                dateKey = "Date";
+                break;
             default:
                 console.log("Opération inconnu : ", transactions[0]["Opération"]);
         }
@@ -208,8 +247,6 @@ function createTransactionsStore() {
         return filtredTransaction;
     }
 
-
-
     return {
         subscribe,
         set,
@@ -220,8 +257,8 @@ function createTransactionsStore() {
         getProjectByMonth,
         getInvestedMoneyByMonth,
         getInvestedMoneyByMonthFromBeginning,
-        getDepotByMonth,
-        getAccountValueByMonth,
+        getDepositValueByMonth,
+        getInterestsValueByMonth,
     };
 }
 

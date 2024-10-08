@@ -5,15 +5,29 @@
 
     let chart;
     let chartCanvas;
-    let investedMoney = {};
+    let interets = {};
+    let capital = {};
+
+    const test = (tooltipItems) => {
+                let sum = 0;
+
+                tooltipItems.forEach(function (tooltipItem) {
+                    sum += tooltipItem.parsed.y;
+                });
+                return "total : " + sum.toFixed(2) + "€";
+            };
+            console.log(test)
 
     // Fonction pour mettre à jour les données du graphique
     function updateChart() {
         if (chart) {
-            investedMoney = transactionsStore.getAccountValueByMonth();
-            chart.data.labels = Object.keys(investedMoney);
-            chart.data.datasets[0].data = Object.values(investedMoney);
+            capital = transactionsStore.getDepositValueByMonth();
+            interets = transactionsStore.getInterestsValueByMonth();
+            chart.data.labels = Object.keys(capital);
+            chart.data.datasets[0].data = Object.values(capital);
+            chart.data.datasets[1].data = Object.values(interets);
             chart.update();
+            
         }
     }
 
@@ -24,25 +38,49 @@
     });
 
     onMount(() => {
-        if (investedMoney[0] == null) {
+        if (capital[0] == null) {
             let today = new Date().toLocaleDateString();
-            investedMoney[today] = 0;
+            capital[today] = 0;
+            interets[today] = 0;
         }
         chart = new Chart(chartCanvas, {
-            type: "line", // Type de graphique (line, bar, pie, etc.)
+            type: "bar", // Type de graphique (line, bar, pie, etc.)
             data: {
-                labels: Object.keys(investedMoney),
+                labels: Object.keys(capital),
                 datasets: [
                     {
-                        label: "Remboursement",
-                        data: Object.values(investedMoney),
-                        borderColor: "rgba(75, 192, 192, 1)",
-                        backgroundColor: "rgba(117, 255, 51, 0.7)",
+                        label: "Capital",
+                        data: Object.values(capital),
+                        backgroundColor: "rgba(0, 255, 0, 0.7)",
+                    },
+                    {
+                        label: "Interets",
+                        data: Object.values(interets),
+                        backgroundColor: "rgba(255, 0, 0, 0.7)",
                     },
                 ],
             },
             options: {
                 maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true,
+                    },
+                },
+                interaction:{
+                    intersect: false,
+                    mode: "index",
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            footer: test,
+                        },
+                    },
+                },
             },
         });
     });
