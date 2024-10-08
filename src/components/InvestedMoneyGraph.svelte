@@ -29,7 +29,7 @@
             investedMoney[today] = 0;
         }
         chart = new Chart(chartCanvas, {
-            type: "bar", // Type de graphique (line, bar, pie, etc.)
+            type: "line", // Type de graphique (line, bar, pie, etc.)
             data: {
                 labels: Object.keys(investedMoney),
                 datasets: [
